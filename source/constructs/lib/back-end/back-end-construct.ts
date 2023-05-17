@@ -23,7 +23,8 @@ import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import { ArnFormat, Aws, Duration, Lazy, Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CloudFrontToApiGatewayToLambda } from "@aws-solutions-constructs/aws-cloudfront-apigateway-lambda";
+import { CloudFrontToApiGatewayToLambda } from "./aws-cloudfront-apigateway-lambda";
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 
 import { addCfnSuppressRules } from "../../utils/utils";
 import { SolutionConstructProps } from "../types";
@@ -214,5 +215,12 @@ export class BackEnd extends Construct {
     imageHandlerCloudFrontApiGatewayLambda.apiGateway.node.tryRemoveChild("Endpoint"); // we don't need the RestApi endpoint in the outputs
 
     this.domainName = imageHandlerCloudFrontApiGatewayLambda.cloudFrontWebDistribution.distributionDomainName;
+
+    const cfnDist = imageHandlerCloudFrontApiGatewayLambda.cloudFrontWebDistribution.node.defaultChild as cloudfront.CfnDistribution;
+    cfnDist.addPropertyOverride('DistributionConfig.Origins.0.OriginShield', {
+      Enabled: true,
+      OriginShieldRegion: Aws.REGION,
+    });
+
   }
 }
