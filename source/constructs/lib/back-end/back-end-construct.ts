@@ -166,14 +166,39 @@ export class BackEnd extends Construct {
       originSslProtocols: [OriginSslPolicy.TLS_V1_1, OriginSslPolicy.TLS_V1_2],
     });
 
+     // Add a cloudfront Function to normalize the accept header
+     const normalizeAcceptHeaderFunction = new cloudfront.Function(this, 'Function', {
+      functionName: `normalize-accept-headers-${Aws.REGION}`,
+      code: cloudfront.FunctionCode.fromInline(`
+            function handler(event) {
+              if (event.request.headers && event.request.headers.accept && event.request.headers.accept.value) {
+                var resultingHeader = "image/jpg";
+                var acceptheadervalue = event.request.headers.accept.value;
+                if (acceptheadervalue.indexOf('image/avif') > -1) {
+                  resultingHeader = 'image/avif';
+                } else if (acceptheadervalue.indexOf('image/webp') > -1) {
+                  resultingHeader = 'image/webp';
+                }
+                event.request.headers.accept = { value: resultingHeader };
+              }
+              return event.request 
+          }
+      `),
+    });
+
     const cloudFrontDistributionProps: DistributionProps = {
       comment: "Image Handler Distribution for Serverless Image Handler",
       defaultBehavior: {
         origin,
+        compress: false,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
         viewerProtocolPolicy: ViewerProtocolPolicy.HTTPS_ONLY,
         originRequestPolicy,
         cachePolicy,
+        functionAssociations: [{
+          function: normalizeAcceptHeaderFunction,
+          eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+        }]
       },
       priceClass: props.cloudFrontPriceClass as PriceClass,
       enableLogging: true,
