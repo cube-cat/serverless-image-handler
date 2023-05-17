@@ -174,9 +174,7 @@ export class BackEnd extends Construct {
               if (event.request.headers && event.request.headers.accept && event.request.headers.accept.value) {
                 var resultingHeader = "image/jpg";
                 var acceptheadervalue = event.request.headers.accept.value;
-                if (acceptheadervalue.indexOf('image/avif') > -1) {
-                  resultingHeader = 'image/avif';
-                } else if (acceptheadervalue.indexOf('image/webp') > -1) {
+                if (acceptheadervalue.indexOf('image/webp') > -1) {
                   resultingHeader = 'image/webp';
                 }
                 event.request.headers.accept = { value: resultingHeader };
