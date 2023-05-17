@@ -198,6 +198,7 @@ export class BackEnd extends Construct {
           eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
         }]
       },
+      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: props.cloudFrontPriceClass as PriceClass,
       enableLogging: true,
       logBucket: props.logsBucket,
