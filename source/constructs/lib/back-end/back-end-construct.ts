@@ -23,7 +23,7 @@ import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import { ArnFormat, Aws, Duration, Lazy, Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CloudFrontToApiGatewayToLambda } from "./aws-cloudfront-apigateway-lambda";
+import { CloudFrontToApiGatewayToLambda } from "@aws-solutions-constructs/aws-cloudfront-apigateway-lambda";
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 
 import { addCfnSuppressRules } from "../../utils/utils";
