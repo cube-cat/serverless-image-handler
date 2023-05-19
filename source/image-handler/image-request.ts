@@ -176,7 +176,7 @@ export class ImageRequest {
         result.lastModified = new Date(originalImage.LastModified).toUTCString();
       }
 
-      result.cacheControl = originalImage.CacheControl ?? "max-age=31536000,public";
+      result.cacheControl = "max-age=31536000,public"; // Make public to avoid having incorrect headers in s3
       result.originalImage = imageBuffer;
 
       return result;
