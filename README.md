@@ -9,6 +9,7 @@
 - [AWS CDK and Solutions Constructs](#aws-cdk-and-solutions-constructs)
 - [Customizing the Solution](#customizing-the-solution)
   - [Prerequisites for Customization](#prerequisites-for-customization)
+  - [Prerequisites for Deployment](#prerequisites-for-deployment)
     - [1. Clone the repository](#1-clone-the-repository)
     - [2. Unit Test](#2-unit-test)
     - [3. Build & Deploy](#3-build-and-deploy)
@@ -46,6 +47,10 @@ In addition to the AWS Solutions Constructs, the solution uses AWS CDK directly 
 - [AWS Command Line Interface](https://aws.amazon.com/cli/)
 - Node.js 14.x
 
+## Prerequisites for Deployment
+- npm i -g aws-cdk 
+- npm i -g esbuild
+
 ### 1. Clone the repository
 
 ```bash
@@ -70,9 +75,8 @@ cd $MAIN_DIRECTORY/source/constructs
 npm run clean:install
 overrideWarningsEnabled=false npx cdk bootstrap --profile <PROFILE_NAME>
 overrideWarningsEnabled=false npx cdk deploy\
- --parameters DeployDemoUIParameter=Yes\
-  --parameters SourceBucketsParameter=<MY_BUCKET>\
-   --profile <PROFILE_NAME>
+ --parameters SourceBucketsParameter=<MY_BUCKET>\
+  --profile <PROFILE_NAME>
 ```
 
 _Note:_

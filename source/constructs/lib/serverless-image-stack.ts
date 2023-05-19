@@ -46,7 +46,7 @@ export class ServerlessImageHandlerStack extends Stack {
       description:
         "Would you like to deploy a demo UI to explore the features and capabilities of this solution? This will create an additional Amazon S3 bucket and Amazon CloudFront distribution in your account.",
       allowedValues: ["Yes", "No"],
-      default: "Yes",
+      default: "No",
     });
 
     const logRetentionPeriodParameter = new CfnParameter(this, "LogRetentionPeriodParameter", {
@@ -79,7 +79,7 @@ export class ServerlessImageHandlerStack extends Stack {
       type: "String",
       description: `Would you like to enable automatic WebP based on accept headers? Select 'Yes' if so.`,
       allowedValues: ["Yes", "No"],
-      default: "No",
+      default: "Yes",
     });
 
     const enableSignatureParameter = new CfnParameter(this, "EnableSignatureParameter", {
@@ -165,11 +165,6 @@ export class ServerlessImageHandlerStack extends Stack {
       ...solutionConstructProps,
     });
 
-    const frontEnd = new FrontEnd(this, "FrontEnd", {
-      logsBucket: commonResources.logsBucket,
-      conditions: commonResources.conditions,
-    });
-
     const backEnd = new BackEnd(this, "BackEnd", {
       solutionVersion: props.solutionVersion,
       solutionName: props.solutionName,
@@ -179,6 +174,28 @@ export class ServerlessImageHandlerStack extends Stack {
       cloudFrontPriceClass: cloudFrontPriceClassParameter.valueAsString,
       ...solutionConstructProps,
     });
+
+    if(solutionConstructProps.deployUI == "Yes") {
+      const frontEnd = new FrontEnd(this, "FrontEnd", {
+        logsBucket: commonResources.logsBucket,
+        conditions: commonResources.conditions,
+      });
+
+      commonResources.customResources.setupCopyWebsiteCustomResource({
+        hostingBucket: frontEnd.websiteHostingBucket,
+      });
+
+      commonResources.customResources.setupPutWebsiteConfigCustomResource({
+        hostingBucket: frontEnd.websiteHostingBucket,
+        apiEndpoint: backEnd.domainName,
+      });
+
+      new CfnOutput(this, "DemoUrl", {
+        value: `https://${frontEnd.domainName}/index.html`,
+        description: "Link to the demo user interface for the solution.",
+        condition: commonResources.conditions.deployUICondition,
+      });
+    }
 
     commonResources.customResources.setupAnonymousMetric({
       anonymousData: anonymousUsage,
@@ -194,15 +211,6 @@ export class ServerlessImageHandlerStack extends Stack {
     commonResources.customResources.setupValidateSecretsManager({
       secretsManager: secretsManagerSecretParameter.valueAsString,
       secretsManagerKey: secretsManagerKeyParameter.valueAsString,
-    });
-
-    commonResources.customResources.setupCopyWebsiteCustomResource({
-      hostingBucket: frontEnd.websiteHostingBucket,
-    });
-
-    commonResources.customResources.setupPutWebsiteConfigCustomResource({
-      hostingBucket: frontEnd.websiteHostingBucket,
-      apiEndpoint: backEnd.domainName,
     });
 
     commonResources.appRegistryApplication({
@@ -294,11 +302,6 @@ export class ServerlessImageHandlerStack extends Stack {
     new CfnOutput(this, "ApiEndpoint", {
       value: `https://${backEnd.domainName}`,
       description: "Link to API endpoint for sending image requests to.",
-    });
-    new CfnOutput(this, "DemoUrl", {
-      value: `https://${frontEnd.domainName}/index.html`,
-      description: "Link to the demo user interface for the solution.",
-      condition: commonResources.conditions.deployUICondition,
     });
     new CfnOutput(this, "SourceBuckets", {
       value: sourceBucketsParameter.valueAsString,
